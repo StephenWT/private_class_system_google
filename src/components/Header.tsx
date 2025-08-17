@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { auth } from '@/lib/api';
 import { LogOut, BookOpen, Settings, FileText, Users } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getLogoUrl, onLogoUrlChange, hydrateLogoFromStorage } from '@/lib/branding';
 
 interface HeaderProps {
@@ -11,6 +11,7 @@ interface HeaderProps {
 
 const Header = ({ onLogout }: HeaderProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const isDemo = import.meta.env.VITE_DEMO_MODE === 'true';
 
   const [logoUrl, setLogoUrl] = useState<string | null>(() => getLogoUrl());
@@ -34,6 +35,10 @@ const Header = ({ onLogout }: HeaderProps) => {
     } finally {
       onLogout();
     }
+  };
+
+  const handleAttendanceClick = () => {
+    navigate('/attendance');
   };
 
   return (
@@ -72,10 +77,20 @@ const Header = ({ onLogout }: HeaderProps) => {
 
         <div className="flex items-center gap-2">
           <nav className="flex items-center gap-1">
-            <Button variant={location.pathname === '/' ? 'default' : 'ghost'} size="sm" asChild>
-              <Link to="/" className="flex items-center gap-2">
+            <Button 
+              variant={location.pathname.startsWith('/attendance') ? 'default' : 'ghost'} 
+              size="sm" 
+              onClick={handleAttendanceClick}
+              className="flex items-center gap-2"
+            >
                 <Users className="w-4 h-4" />
                 Attendance
+            </Button>
+
+            <Button variant={location.pathname.startsWith('/classes') ? 'default' : 'ghost'} size="sm" asChild>
+              <Link to="/classes" className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4" />
+                Classes
               </Link>
             </Button>
 

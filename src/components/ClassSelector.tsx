@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getLogoUrl, onLogoUrlChange, hydrateLogoFromStorage } from '@/lib/branding';
 
 interface ClassSelectorProps {
+  mode?: 'full' | 'compact';
   onSelectionComplete: (
     selectedClass: { class_id: string; class_name: string },
     month: string,
@@ -22,7 +23,7 @@ interface ClassSelectorProps {
 
 type UiClass = { id: string; class_name: string };
 
-const ClassSelector = ({ onSelectionComplete }: ClassSelectorProps) => {
+const ClassSelector = ({ mode = 'full', onSelectionComplete }: ClassSelectorProps) => {
   const { toast } = useToast();
 
   const [availableClasses, setAvailableClasses] = useState<UiClass[]>([]);
@@ -168,6 +169,60 @@ const ClassSelector = ({ onSelectionComplete }: ClassSelectorProps) => {
 
     onSelectionComplete(selectedClass, selectedMonth, useCustomDates ? customDates : undefined);
   };
+
+  // Compact mode - just a class dropdown
+  if (mode === 'compact') {
+    return (
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Label htmlFor="compact-class-select" className="text-sm font-medium whitespace-nowrap">
+            Class:
+          </Label>
+          <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+            <SelectTrigger id="compact-class-select" className="w-[200px]">
+              <SelectValue placeholder="Select class" />
+            </SelectTrigger>
+            <SelectContent>
+              {availableClasses.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.class_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        {!isCreatingNew && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsCreatingNew(true)}
+            className="flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            New Class
+          </Button>
+        )}
+        
+        {isCreatingNew && (
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="Class name"
+              value={newClassName}
+              onChange={(e) => setNewClassName(e.target.value)}
+              className="w-[150px]"
+            />
+            <Button size="sm" onClick={handleProceed} disabled={!newClassName.trim()}>
+              Create
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setIsCreatingNew(false)}>
+              Cancel
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
