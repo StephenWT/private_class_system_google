@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import StudentManager from './StudentManager';
 import { Student } from '@/types';
 import { students as studentsApi } from '@/lib/api';
+import { getTodayISO } from '@/lib/nav';
 
 interface Class {
   id: string;
@@ -19,11 +21,8 @@ interface Class {
   student_count?: number;
 }
 
-interface ClassManagerProps {
-  onTakeAttendance?: (classData: { class_id: string; class_name: string }) => void;
-}
-
-const ClassManager = ({ onTakeAttendance }: ClassManagerProps) => {
+const ClassManager = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [classes, setClasses] = useState<Class[]>([]);
   const [isAddingClass, setIsAddingClass] = useState(false);
@@ -256,6 +255,10 @@ const ClassManager = ({ onTakeAttendance }: ClassManagerProps) => {
     ));
   };
 
+  const handleTakeAttendance = (classId: string) => {
+    navigate(`/attendance/${classId}?date=${getTodayISO()}`);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -277,18 +280,13 @@ const ClassManager = ({ onTakeAttendance }: ClassManagerProps) => {
             <p className="text-muted-foreground">Add, remove, and manage students for this class</p>
           </div>
           <div className="flex gap-2">
-            {onTakeAttendance && (
-              <Button
-                onClick={() => onTakeAttendance({ 
-                  class_id: managingStudentsClass.id, 
-                  class_name: managingStudentsClass.class_name 
-                })}
-                className="flex items-center gap-2"
-              >
-                <ArrowRight className="w-4 h-4" />
-                Take Attendance
-              </Button>
-            )}
+            <Button
+              onClick={() => handleTakeAttendance(managingStudentsClass.id)}
+              className="flex items-center gap-2"
+            >
+              <ArrowRight className="w-4 h-4" />
+              Take Attendance
+            </Button>
             <Button
               variant="outline"
               onClick={() => setManagingStudentsClass(null)}
@@ -423,19 +421,14 @@ const ClassManager = ({ onTakeAttendance }: ClassManagerProps) => {
                           Manage Students
                         </Button>
                         
-                        {onTakeAttendance && (
-                          <Button
-                            size="sm"
-                            onClick={() => onTakeAttendance({ 
-                              class_id: cls.id, 
-                              class_name: cls.class_name 
-                            })}
-                            className="flex items-center gap-2"
-                          >
-                            <ArrowRight className="w-4 h-4" />
-                            Take Attendance
-                          </Button>
-                        )}
+                        <Button
+                          size="sm"
+                          onClick={() => handleTakeAttendance(cls.id)}
+                          className="flex items-center gap-2"
+                        >
+                          <ArrowRight className="w-4 h-4" />
+                          Take Attendance
+                        </Button>
 
                         <Dialog>
                           <DialogTrigger asChild>

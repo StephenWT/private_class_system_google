@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import type { Student, AttendanceRecord, AttendanceData } from '@/types';
@@ -7,6 +8,7 @@ import { attendance } from '@/lib/api';
 import { Save, Loader2, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import StudentManager from './StudentManager';
+import { getTodayISO } from '@/lib/nav';
 
 interface AttendanceGridProps {
   selectedClass: { class_id: string; class_name: string };
@@ -43,6 +45,7 @@ const AttendanceGrid = ({
   onStudentsChange,
 }: AttendanceGridProps) => {
   // Key attendance by "<studentId>-<YYYY-MM-DD>"
+  const navigate = useNavigate();
   const [attendanceData, setAttendanceData] = useState<Map<string, boolean>>(new Map());
   const [isSaving, setIsSaving] = useState(false);
   const [currentView, setCurrentView] = useState<'attendance' | 'students'>('students');
@@ -53,6 +56,10 @@ const AttendanceGrid = ({
 
   // Which students have any schedule rows in this class (membership)
   const [enrolledIds, setEnrolledIds] = useState<Set<string> | null>(null);
+
+  const handleManageStudents = () => {
+    navigate(`/classes/${selectedClass.class_id}/students`);
+  };
 
   // ---- Load planned dates + pre-check attendance for the month ----
   useEffect(() => {
@@ -285,6 +292,13 @@ const AttendanceGrid = ({
             disabled={studentsForThisClass.length === 0}
           >
             Take Attendance
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleManageStudents}
+          >
+            Manage Students (Advanced)
           </Button>
         </div>
       </div>

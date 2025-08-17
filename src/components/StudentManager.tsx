@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,6 +11,7 @@ import { Plus, Trash2, Mail, DollarSign, User } from 'lucide-react';
 import { Student } from '@/types';
 import { students as studentsApi } from '@/lib/api'; // Supabase-backed API for students
 import { supabase } from '@/integrations/supabase/client';
+import { getTodayISO } from '@/lib/nav';
 
 interface StudentManagerProps {
   students: Student[];
@@ -24,6 +26,7 @@ interface StudentManagerProps {
 
 const StudentManager = ({ students, onStudentsChange, classId, plannedDatesIso }: StudentManagerProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isAddingStudent, setIsAddingStudent] = useState(false);
   const [isBusy, setIsBusy] = useState(false);
 
@@ -33,6 +36,10 @@ const StudentManager = ({ students, onStudentsChange, classId, plannedDatesIso }
     paymentStatus: 'pending' as Student['payment_status'],
     invoiceAmount: '',
   });
+
+  const handleTakeAttendance = () => {
+    if (classId) navigate(`/attendance/${classId}?date=${getTodayISO()}`);
+  };
 
   const emailLooksValid = (e: string) => !e || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
@@ -173,6 +180,12 @@ const StudentManager = ({ students, onStudentsChange, classId, plannedDatesIso }
           <Plus className="w-4 h-4 mr-2" />
           Add Student
         </Button>
+        {classId && (
+          <Button size="sm" onClick={handleTakeAttendance} className="flex items-center gap-2">
+            <User className="w-4 h-4" />
+            Take Attendance
+          </Button>
+        )}
       </div>
 
       {/* Add Student Form */}
